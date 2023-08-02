@@ -18,15 +18,21 @@
 
 package org.apache.drill.exec.store.xml.xsd;
 
+import org.apache.drill.categories.RowSetTest;
 import org.apache.drill.common.types.TypeProtos.MinorType;
 import org.apache.drill.common.util.DrillFileUtils;
+import org.apache.drill.exec.physical.rowSet.RowSet;
 import org.apache.drill.exec.record.metadata.MapBuilder;
 import org.apache.drill.exec.record.metadata.SchemaBuilder;
 import org.apache.drill.exec.record.metadata.TupleMetadata;
+import org.apache.drill.test.ClusterTest;
+import org.apache.drill.test.rowSet.RowSetComparison;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.File;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestXSDSchema {
@@ -36,26 +42,26 @@ public class TestXSDSchema {
     File simple_xsd = DrillFileUtils.getResourceAsFile("/xsd/simple.xsd");
     TupleMetadata schema = DrillXSDSchemaUtils.getSchema(simple_xsd.getPath());
 
-    TupleMetadata expectedSchema  = new SchemaBuilder()
+    TupleMetadata expectedSchema = new SchemaBuilder()
         .addMap("shiporder")
-          .addMap("attributes")
-            .addNullable("orderid", MinorType.VARCHAR)
-          .resumeMap()
-          .addNullable("orderperson", MinorType.VARCHAR)
-          .addMap("shipto")
-            .addNullable("name", MinorType.VARCHAR)
-            .addNullable("address", MinorType.VARCHAR)
-            .addNullable("city", MinorType.VARCHAR)
-            .addNullable("country", MinorType.VARCHAR)
+        .addMap("attributes")
+        .addNullable("orderid", MinorType.VARCHAR)
         .resumeMap()
-          .addMapArray("item")
-            .addNullable("title", MinorType.VARCHAR)
-            .addNullable("note", MinorType.VARCHAR)
-            .addNullable("quantity", MinorType.VARDECIMAL)
-            .addNullable("price", MinorType.VARDECIMAL)
-          .resumeMap()
+        .addNullable("orderperson", MinorType.VARCHAR)
+        .addMap("shipto")
+        .addNullable("name", MinorType.VARCHAR)
+        .addNullable("address", MinorType.VARCHAR)
+        .addNullable("city", MinorType.VARCHAR)
+        .addNullable("country", MinorType.VARCHAR)
+        .resumeMap()
+        .addMapArray("item")
+        .addNullable("title", MinorType.VARCHAR)
+        .addNullable("note", MinorType.VARCHAR)
+        .addNullable("quantity", MinorType.VARDECIMAL)
+        .addNullable("price", MinorType.VARDECIMAL)
+        .resumeMap()
         .resumeSchema()
-      .buildSchema();
+        .buildSchema();
     assertTrue(expectedSchema.isEquivalent(schema));
   }
 
@@ -69,52 +75,54 @@ public class TestXSDSchema {
     MapBuilder sb2 = sb1
         .addNullable("comment", MinorType.VARCHAR) // global comment element
         .addMap("infoType")
-          .addMap("attributes")
-            .addNullable("kind", MinorType.VARCHAR)
-          .resumeMap()
+        .addMap("attributes")
+        .addNullable("kind", MinorType.VARCHAR)
+        .resumeMap()
         .resumeSchema()
         .addMap("purchaseOrder") // global purchaseOrder element
-          .addMap("attributes")
-            .addNullable("orderDate", MinorType.DATE) // an attribute
-            .addNullable("confirmDate", MinorType.DATE) // an attribute
-          .resumeMap()
-          .addMap("shipTo")
-            .addMap("attributes")
-              .addNullable("country", MinorType.VARCHAR) // an attribute
-            .resumeMap()
-            .addNullable("name", MinorType.VARCHAR)
-            .addNullable("street", MinorType.VARCHAR)
-            .addNullable("city", MinorType.VARCHAR)
-            .addNullable("state", MinorType.VARCHAR)
-            .addNullable("zip", MinorType.VARDECIMAL)
-          .resumeMap(); // end shipTo
+        .addMap("attributes")
+        .addNullable("orderDate", MinorType.DATE) // an attribute
+        .addNullable("confirmDate", MinorType.DATE) // an attribute
+        .resumeMap()
+        .addMap("shipTo")
+        .addMap("attributes")
+        .addNullable("country", MinorType.VARCHAR) // an attribute
+        .resumeMap()
+        .addNullable("name", MinorType.VARCHAR)
+        .addNullable("street", MinorType.VARCHAR)
+        .addNullable("city", MinorType.VARCHAR)
+        .addNullable("state", MinorType.VARCHAR)
+        .addNullable("zip", MinorType.VARDECIMAL)
+        .resumeMap(); // end shipTo
     MapBuilder sb3 = sb2
-          .addMap("billTo")
-            .addMap("attributes")
-              .addNullable("country", MinorType.VARCHAR) // an attribute
-            .resumeMap()
-            .addNullable("name", MinorType.VARCHAR)
-            .addNullable("street", MinorType.VARCHAR)
-             .addNullable("city", MinorType.VARCHAR)
-            .addNullable("state", MinorType.VARCHAR)
-            .addNullable("zip", MinorType.VARDECIMAL)
-          .resumeMap();
+        .addMap("billTo")
+        .addMap("attributes")
+        .addNullable("country", MinorType.VARCHAR) // an attribute
+        .resumeMap()
+        .addNullable("name", MinorType.VARCHAR)
+        .addNullable("street", MinorType.VARCHAR)
+        .addNullable("city", MinorType.VARCHAR)
+        .addNullable("state", MinorType.VARCHAR)
+        .addNullable("zip", MinorType.VARDECIMAL)
+        .resumeMap();
     MapBuilder sb4 = sb3
-          .addNullable("comment", MinorType.VARCHAR)
-          .addMap("items")
-            .addMapArray("item")
-              .addMap("attributes")
-                .addNullable("partNum", MinorType.VARCHAR) // an attribute
-             .resumeMap()
-              .addNullable("productName", MinorType.VARCHAR)
-              .addNullable("quantity", MinorType.VARDECIMAL)
-              .addNullable("USPrice", MinorType.VARDECIMAL)
-              .addNullable("comment", MinorType.VARCHAR)
-              .addNullable("shipDate", MinorType.DATE)
-            .resumeMap() // end item
-          .resumeMap(); // end items
+        .addNullable("comment", MinorType.VARCHAR)
+        .addMap("items")
+        .addMapArray("item")
+        .addMap("attributes")
+        .addNullable("partNum", MinorType.VARCHAR) // an attribute
+        .resumeMap()
+        .addNullable("productName", MinorType.VARCHAR)
+        .addNullable("quantity", MinorType.VARDECIMAL)
+        .addNullable("USPrice", MinorType.VARDECIMAL)
+        .addNullable("comment", MinorType.VARCHAR)
+        .addNullable("shipDate", MinorType.DATE)
+        .resumeMap() // end item
+        .resumeMap(); // end items
 
     TupleMetadata expectedSchema = sb4.resumeSchema().build();
     assertTrue(expectedSchema.isEquivalent(schema));
   }
+
 }
+

@@ -47,4 +47,12 @@
       <xs:attribute name="orderid" type="xs:string" use="required"/>
     </xs:complexType>
   </xs:element>
+
+  <xs:element name="test1">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="int1" type="xs:int"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
 </xs:schema>
